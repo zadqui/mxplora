@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ZONA FAN — Mundial 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&family=Public+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="styles.css"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode:"class",
+    theme:{extend:{
+      colors:{
+        "surface":"#101418","surface-container-low":"#181c20","surface-container":"#1c2024",
+        "surface-container-high":"#262a2f","surface-container-highest":"#31353a",
+        "primary":"#84d7ae","primary-container":"#006847","on-primary-container":"#90e4ba",
+        "on-surface":"#e0e3e8","on-surface-variant":"#bec9c1","outline-variant":"#3f4943","error":"#ffb4ab"
+      },
+      fontFamily:{"headline":["Lexend","sans-serif"],"body":["Public Sans","sans-serif"]}
+    }}
+  }
+</script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body class="bg-surface text-on-surface font-body overflow-x-hidden">
+
+<!-- ═══ SVG DEFS (íconos reutilizables inline, sin emojis) ═══ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <!-- home -->
+  <symbol id="ic-home" viewBox="0 0 24 24"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></symbol>
+  <!-- soccer ball -->
+  <symbol id="ic-ball" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.93V15h2v1.93c-.33.05-.66.07-1 .07s-.67-.02-1-.07zm4-1.5-1-1.73 1.73-1 1 1.73-1.73 1zm-6 0-1.73-1 1-1.73 1.73 1-1 1.73zM12 8c.34 0 .67.02 1 .07V10h-2V8.07C11.33 8.02 11.66 8 12 8zm3.61 1.39 1.73 1-1 1.73-1.73-1 1-1.73zM8.39 9.39l1 1.73-1.73 1-1-1.73 1.73-1zM12 13l-1 1.73h2L12 13z"/></symbol>
+  <!-- rss/feed -->
+  <symbol id="ic-rss" viewBox="0 0 24 24"><path fill="currentColor" d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19.01 7.38 20 6.18 20C4.98 20 4 19.01 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z"/></symbol>
+  <!-- tv -->
+  <symbol id="ic-tv" viewBox="0 0 24 24"><path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></symbol>
+  <!-- map -->
+  <symbol id="ic-map" viewBox="0 0 24 24"><path fill="currentColor" d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z"/></symbol>
+  <!-- refresh -->
+  <symbol id="ic-refresh" viewBox="0 0 24 24"><path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
+  <!-- X logo -->
+  <symbol id="ic-x" viewBox="0 0 24 24"><path fill="currentColor" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.629zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></symbol>
+  <!-- open external -->
+  <symbol id="ic-ext" viewBox="0 0 24 24"><path fill="currentColor" d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></symbol>
+  <!-- heart -->
+  <symbol id="ic-heart" viewBox="0 0 24 24"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></symbol>
+  <!-- retweet -->
+  <symbol id="ic-rt" viewBox="0 0 24 24"><path fill="currentColor" d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/></symbol>
+  <!-- comment -->
+  <symbol id="ic-comment" viewBox="0 0 24 24"><path fill="currentColor" d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></symbol>
+  <!-- chart / sentiment bar -->
+  <symbol id="ic-chart" viewBox="0 0 24 24"><path fill="currentColor" d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></symbol>
+  <!-- live dot -->
+  <symbol id="ic-live" viewBox="0 0 24 24"><circle fill="currentColor" cx="12" cy="12" r="8"/></symbol>
+</svg>
+
+<!-- ═══ NAV ═══ -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-5 font-headline tracking-tighter" style="background:#0a3d2e;border-bottom:1px solid rgba(0,200,100,.2);height:52px">
+  <div class="flex items-center gap-3">
+    <!-- Botón home -->
+    <button onclick="window.scrollTo({top:0,behavior:'smooth'})"
+      class="w-10 h-10 flex items-center justify-center transition-colors" style="border:1px solid rgba(255,255,255,.25);border-radius:2px;background:rgba(255,255,255,.08)" onmouseenter="this.style.background='rgba(255,255,255,.18)'" onmouseleave="this.style.background='rgba(255,255,255,.08)'">
+      <svg class="w-5 h-5" style="color:#fff"><use href="#ic-home"/></svg>
+    </button>
+    <!-- Isotopo logo -->
+    <img src="isotopo.svg" alt="Logo" style="height:34px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.9;transition:opacity .2s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.9'"/>
+    <!-- Separador -->
+    <div style="width:1px;height:28px;background:rgba(255,255,255,.2)"></div>
+    <!-- Coppel logo -->
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Coppel_2025.svg/320px-Coppel_2025.svg.png" alt="Coppel"
+      style="height:22px;width:auto;object-fit:contain;filter:brightness(0) invert(1);opacity:.7;transition:opacity .2s"
+      onerror="this.src='https://es.wikipedia.org/wiki/Special:FilePath/Coppel_2025.svg';this.onerror=null"
+      onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.7'"/>
+  </div>
+  <div class="hidden md:flex gap-6 items-center text-xs font-bold tracking-widest">
+    <a href="#partido"    style="color:#84d7ae" class="hover:opacity-70 transition-opacity">PARTIDO</a>
+    <a href="#calendario" style="color:rgba(255,255,255,.6)" class="hover:opacity-100 transition-opacity" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='rgba(255,255,255,.6)'">CALENDARIO</a>
+    <a href="#ver"        style="color:rgba(255,255,255,.6)" class="hover:opacity-100 transition-opacity" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='rgba(255,255,255,.6)'">VER</a>
+    <a href="#mapa"       style="color:rgba(255,255,255,.6)" class="hover:opacity-100 transition-opacity" onmouseenter="this.style.color='#fff'" onmouseleave="this.style.color='rgba(255,255,255,.6)'">MAPA</a>
+  </div>
+</nav>
+
+<!-- ═══ BARRA GRIS — mismo alto exacto que nav ═══ -->
+<div style="position:fixed;top:52px;left:0;width:100%;height:52px;z-index:49;background:#1a1e22;border-bottom:1px solid rgba(255,255,255,.07)"></div>
+
+<!-- ═══ HERO FULLSCREEN CON CARRUSEL ═══ -->
+<div style="position:relative;width:100%;height:100vh;overflow:hidden;margin-top:0;padding-top:104px;box-sizing:border-box">
+
+  <!-- Slides de fondo — filtro gris -->
+  <div style="position:absolute;inset:0;z-index:0">
+    <div class="hs" style="position:absolute;inset:0;opacity:1;transition:opacity 1.2s ease">
+      <img src="https://assets.goal.com/images/v3/bltc84d477300ec7eb7/Aztec_Stadium_16-9.jpg"
+        style="width:100%;height:100%;object-fit:cover;object-position:center 40%;filter:grayscale(70%) brightness(.75)"
+        onerror="this.src='https://hotelesemporio.com/wp-content/uploads/2025/11/Estadio.jpg'"/>
+    </div>
+    <div class="hs" style="position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease">
+      <img src="https://hotelesemporio.com/wp-content/uploads/2025/11/Estadio.jpg"
+        style="width:100%;height:100%;object-fit:cover;object-position:center 50%;filter:grayscale(70%) brightness(.75)"/>
+    </div>
+    <div class="hs" style="position:absolute;inset:0;opacity:0;transition:opacity 1.2s ease">
+      <img src="https://assets.goal.com/images/v3/bltc84d477300ec7eb7/Aztec_Stadium_16-9.jpg"
+        style="width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:grayscale(70%) brightness(.75)"/>
+    </div>
+    <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,12,16,.25) 0%,rgba(8,12,16,.5) 70%,rgba(8,12,16,.97) 100%)"></div>
+  </div>
+
+  <!-- Contenido: ZONA FAN + card partido debajo -->
+  <div style="position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 20px;gap:32px">
+
+    <!-- Título -->
+    <div>
+      <div class="font-headline font-black uppercase italic tracking-tighter" style="font-size:clamp(72px,14vw,160px);line-height:.9">
+        <div style="display:block;color:#e0e3e8">FAN</div>
+        <div style="display:block;color:#84d7ae">ZONE</div>
+      </div>
+      <p class="font-headline uppercase font-light" style="margin-top:16px;font-size:clamp(10px,1.5vw,13px);letter-spacing:.4em;color:rgba(224,227,232,.6)">
+        ESTADIO AZTECA · CIUDAD DE MEXICO
+      </p>
+      <div class="tricolor" style="width:120px;height:4px;margin:12px auto 0;border-radius:2px"></div>
+    </div>
+
+    <!-- Mini card del partido incrustado en el hero -->
+    <div id="hero-partido" style="width:100%;max-width:580px;position:relative;overflow:hidden;border:1px solid rgba(0,104,71,.5);border-radius:4px;backdrop-filter:blur(8px)">
+      <!-- Fondo imagen estadio interior -->
+      <div style="position:absolute;inset:0;z-index:0">
+        <img src="https://assets.goal.com/images/v3/bltc84d477300ec7eb7/Aztec_Stadium_16-9.jpg"
+          style="width:100%;height:100%;object-fit:cover;object-position:center 60%;filter:grayscale(30%) brightness(.5) saturate(1.2);transform:scale(1.08);transition:transform 6s ease"
+          onload="setTimeout(()=>this.style.transform='scale(1)',100)"/>
+        <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,40,20,.85) 0%,rgba(8,12,16,.75) 100%)"></div>
+      </div>
+      <!-- Contenido -->
+      <div style="position:relative;z-index:1;padding:20px 24px">
+      <p id="cnt-label" style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.3em;color:rgba(132,215,174,.7);text-transform:uppercase;margin-bottom:12px">APERTURA MUNDIAL · FALTAN:</p>
+      <!-- Contador -->
+      <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:16px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <span class="cnt" id="cnt-d" style="font-size:clamp(40px,8vw,72px)">--</span>
+          <span style="font-size:9px;letter-spacing:.2em;font-weight:700;color:rgba(190,201,193,.5);font-family:'Lexend',sans-serif;text-transform:uppercase">Dias</span>
+        </div>
+        <span class="sep" style="font-size:clamp(28px,5vw,52px);padding-bottom:18px">:</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <span class="cnt" id="cnt-h" style="font-size:clamp(40px,8vw,72px)">--</span>
+          <span style="font-size:9px;letter-spacing:.2em;font-weight:700;color:rgba(190,201,193,.5);font-family:'Lexend',sans-serif;text-transform:uppercase">Horas</span>
+        </div>
+        <span class="sep" style="font-size:clamp(28px,5vw,52px);padding-bottom:18px">:</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <span class="cnt" id="cnt-m" style="font-size:clamp(40px,8vw,72px)">--</span>
+          <span style="font-size:9px;letter-spacing:.2em;font-weight:700;color:rgba(190,201,193,.5);font-family:'Lexend',sans-serif;text-transform:uppercase">Min</span>
+        </div>
+        <span class="sep" style="font-size:clamp(28px,5vw,52px);padding-bottom:18px">:</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+          <span class="cnt" id="cnt-s" style="font-size:clamp(40px,8vw,72px)">--</span>
+          <span style="font-size:9px;letter-spacing:.2em;font-weight:700;color:rgba(190,201,193,.5);font-family:'Lexend',sans-serif;text-transform:uppercase">Seg</span>
+        </div>
+      </div>
+      <!-- Equipos -->
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:10px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <img id="flag-a" src="https://flagcdn.com/w160/mx.png" style="width:64px;height:43px;object-fit:cover;border-radius:3px;border:1px solid rgba(255,255,255,.15)"/>
+          <span id="team-a" style="font-family:'Lexend',sans-serif;font-weight:900;font-size:14px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.08em">MEXICO</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:28px;color:rgba(224,227,232,.7);letter-spacing:.05em">VS</span>
+          <div id="fecha-badge" style="background:#006847;color:#fff;font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;letter-spacing:.15em;padding:3px 10px;border-radius:2px;text-transform:uppercase">CARGANDO...</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+          <img id="flag-b" src="https://flagcdn.com/w160/za.png" style="width:64px;height:43px;object-fit:cover;border-radius:3px;border:1px solid rgba(255,255,255,.15)"/>
+          <span id="team-b" style="font-family:'Lexend',sans-serif;font-weight:900;font-size:14px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.08em">SUDAFRICA</span>
+        </div>
+      </div>
+      <!-- Info -->
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.12em;color:rgba(190,201,193,.45);text-transform:uppercase">
+        <span id="info-hora">—</span><span style="opacity:.3">·</span>
+        <span id="info-estadio">—</span><span style="opacity:.3">·</span>
+        <span id="info-grupo">—</span>
+      </div>
+      </div><!-- fin contenido -->
+    </div><!-- fin hero-partido -->
+
+  </div>
+
+  <!-- Dots -->
+  <div style="position:absolute;bottom:20px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:5">
+    <div class="hd" style="width:24px;height:3px;background:#84d7ae;border-radius:2px;transition:all .4s"></div>
+    <div class="hd" style="width:8px;height:3px;background:rgba(255,255,255,.3);border-radius:2px;transition:all .4s"></div>
+    <div class="hd" style="width:8px;height:3px;background:rgba(255,255,255,.3);border-radius:2px;transition:all .4s"></div>
+  </div>
+
+</div>
+
+<!-- CARD PARTIDO pegado justo debajo del hero -->
+<div class="max-w-3xl mx-auto px-4" style="margin-top:0;padding-top:32px;padding-bottom:0">
+</div><!-- fin card partido wrapper -->
+
+<main class="pb-0 space-y-0" style="padding-top:0">
+
+  <!-- ═══ NEGOCIOS LOCALES ═══ -->
+  <section style="padding:64px 0;background:#0a0f0c">
+    <div style="max-width:64rem;margin:0 auto;padding:0 2rem">
+
+      <p style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.35em;color:rgba(132,215,174,.55);text-transform:uppercase;margin-bottom:10px">CERCA DEL AZTECA</p>
+      <h2 class="font-headline font-black uppercase italic tracking-tighter" style="font-size:clamp(24px,4vw,40px);color:#e0e3e8;margin-bottom:6px">Negocios 100% Mexicanos</h2>
+      <p style="font-family:'Lexend',sans-serif;font-size:12px;font-weight:300;color:rgba(190,201,193,.5);letter-spacing:.05em;margin-bottom:32px">Bazares, restaurantes y experiencias locales junto al evento</p>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">
+
+        <!-- 1 El Colocho -->
+         <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(0,104,71,.3);background:#101418;transition:transform .25s,border-color .25s;cursor:pointer" onmouseenter="this.style.transform='translateY(-5px)';this.style.borderColor='#84d7ae'" onmouseleave="this.style.transform='translateY(0)';this.style.borderColor='rgba(0,104,71,.3)'">
+          <div style="height:140px;overflow:hidden;position:relative">
+            <img src="https://www.dondeir.com/wp-content/uploads/2019/06/restaurantes-para-extranjeros-coyoacan-antigua-fonda-santa-catarina.jpg"
+              style="width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(.85) saturate(1.1);transition:transform .4s"
+              onmouseenter="this.style.transform='scale(1.06)'" onmouseleave="this.style.transform='scale(1)'"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,15,12,.7),transparent 60%)"></div>
+            <span style="position:absolute;top:10px;left:10px;font-family:'Lexend',sans-serif;font-size:7px;font-weight:700;letter-spacing:.2em;color:#84d7ae;text-transform:uppercase;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:2px">TACOS · ANTOJITOS</span>
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:'Lexend',sans-serif;font-size:15px;font-weight:900;color:#e0e3e8;text-transform:uppercase;letter-spacing:.03em">El Colocho</div>
+            <div style="font-family:'Lexend',sans-serif;font-size:10px;font-weight:300;color:rgba(190,201,193,.45);margin-top:4px;letter-spacing:.04em">100m del Estadio Azteca</div>
+          </div>
+        </div>
+
+        <!-- 2 La Barra Verde -->
+        <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(0,104,71,.3);background:#101418;transition:transform .25s,border-color .25s;cursor:pointer" onmouseenter="this.style.transform='translateY(-5px)';this.style.borderColor='#84d7ae'" onmouseleave="this.style.transform='translateY(0)';this.style.borderColor='rgba(0,104,71,.3)'">
+          <div style="height:140px;overflow:hidden;position:relative">
+            <img src="https://cdmxsecreta.com/wp-content/uploads/2022/09/restaurantes-mexicanos-cdmx.jpg"
+              style="width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(.85) saturate(1.1);transition:transform .4s"
+              onmouseenter="this.style.transform='scale(1.06)'" onmouseleave="this.style.transform='scale(1)'"
+              onerror="this.src='https://offloadmedia.feverup.com/cdmxsecreta.com/wp-content/uploads/2023/08/31174612/restaurantes-comida-mexicana-cdmx-1024x683.jpg'"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,15,12,.7),transparent 60%)"></div>
+            <span style="position:absolute;top:10px;left:10px;font-family:'Lexend',sans-serif;font-size:7px;font-weight:700;letter-spacing:.2em;color:#FFD600;text-transform:uppercase;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:2px">CANTINA · BAR</span>
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:'Lexend',sans-serif;font-size:15px;font-weight:900;color:#e0e3e8;text-transform:uppercase;letter-spacing:.03em">La Barra Verde</div>
+            <div style="font-family:'Lexend',sans-serif;font-size:10px;font-weight:300;color:rgba(190,201,193,.45);margin-top:4px;letter-spacing:.04em">200m del Estadio Azteca</div>
+          </div>
+        </div>
+
+        <!-- 3 Mercado Azteca -->
+        <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(0,104,71,.3);background:#101418;transition:transform .25s,border-color .25s;cursor:pointer" onmouseenter="this.style.transform='translateY(-5px)';this.style.borderColor='#84d7ae'" onmouseleave="this.style.transform='translateY(0)';this.style.borderColor='rgba(0,104,71,.3)'">
+          <div style="height:140px;overflow:hidden;position:relative">
+            <img src="https://cdmxsecreta.com/wp-content/uploads/2022/09/restaurantes-mexicanos-cdmx.jpg"
+              style="width:100%;height:100%;object-fit:cover;object-position:center 30%;filter:brightness(.85) saturate(1.1);transition:transform .4s"
+              onmouseenter="this.style.transform='scale(1.06)'" onmouseleave="this.style.transform='scale(1)'"
+              onerror="this.src='https://www.godinezgourmet.com/wp-content/uploads/2019/08/surtidora-don-batiz-mexicana-polanco-ciudad-mexico-cdmx_2-768x901.jpg'"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,15,12,.7),transparent 60%)"></div>
+            <span style="position:absolute;top:10px;left:10px;font-family:'Lexend',sans-serif;font-size:7px;font-weight:700;letter-spacing:.2em;color:#FF6D00;text-transform:uppercase;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:2px">BAZAR · ARTESANIAS</span>
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:'Lexend',sans-serif;font-size:15px;font-weight:900;color:#e0e3e8;text-transform:uppercase;letter-spacing:.03em">Mercado Azteca</div>
+            <div style="font-family:'Lexend',sans-serif;font-size:10px;font-weight:300;color:rgba(190,201,193,.45);margin-top:4px;letter-spacing:.04em">Frente al Estadio</div>
+          </div>
+        </div>
+
+        <!-- 4 Kiosko Tri -->
+        <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(0,104,71,.3);background:#101418;transition:transform .25s,border-color .25s;cursor:pointer" onmouseenter="this.style.transform='translateY(-5px)';this.style.borderColor='#84d7ae'" onmouseleave="this.style.transform='translateY(0)';this.style.borderColor='rgba(0,104,71,.3)'">
+          <div style="height:140px;overflow:hidden;position:relative">
+            <img src="https://i.blogs.es/548be2/pambazooo/1366_2000.jpg"
+              style="width:100%;height:100%;object-fit:cover;object-position:center 70%;filter:brightness(.85) saturate(1.1);transition:transform .4s"
+              onmouseenter="this.style.transform='scale(1.06)'" onmouseleave="this.style.transform='scale(1)'"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,15,12,.7),transparent 60%)"></div>
+            <span style="position:absolute;top:10px;left:10px;font-family:'Lexend',sans-serif;font-size:7px;font-weight:700;letter-spacing:.2em;color:#84d7ae;text-transform:uppercase;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:2px">CAFE · POSTRES</span>
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:'Lexend',sans-serif;font-size:15px;font-weight:900;color:#e0e3e8;text-transform:uppercase;letter-spacing:.03em">Kiosko Tri</div>
+            <div style="font-family:'Lexend',sans-serif;font-size:10px;font-weight:300;color:rgba(190,201,193,.45);margin-top:4px;letter-spacing:.04em">Plaza Santa Ursula</div>
+          </div>
+        </div>
+
+        <!-- 5 La Jersey -->
+        <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(0,104,71,.3);background:#101418;transition:transform .25s,border-color .25s;cursor:pointer" onmouseenter="this.style.transform='translateY(-5px)';this.style.borderColor='#84d7ae'" onmouseleave="this.style.transform='translateY(0)';this.style.borderColor='rgba(0,104,71,.3)'">
+          <div style="height:140px;overflow:hidden;position:relative">
+            <img src="https://cdmxsecreta.com/wp-content/uploads/2022/09/restaurantes-mexicanos-cdmx.jpg"
+              style="width:100%;height:100%;object-fit:cover;object-position:center 80%;filter:brightness(.85) saturate(1.1);transition:transform .4s"
+              onmouseenter="this.style.transform='scale(1.06)'" onmouseleave="this.style.transform='scale(1)'"
+              onerror="this.src='https://www.eluniversal.com.mx/resizer/v2/B64L5ODTZZBK3G7UUVGRIVYRZE.jpg?auth=3815ce7fec39a5cb9c053944a0b8146c50e7c1f313be027e7813c72435960818&smart=true&height=666'"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,15,12,.7),transparent 60%)"></div>
+            <span style="position:absolute;top:10px;left:10px;font-family:'Lexend',sans-serif;font-size:7px;font-weight:700;letter-spacing:.2em;color:#ffb4ab;text-transform:uppercase;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:2px">MERCHANDISE</span>
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:'Lexend',sans-serif;font-size:15px;font-weight:900;color:#e0e3e8;text-transform:uppercase;letter-spacing:.03em">La Jersey</div>
+            <div style="font-family:'Lexend',sans-serif;font-size:10px;font-weight:300;color:rgba(190,201,193,.45);margin-top:4px;letter-spacing:.04em">Av. Insurgentes Sur</div>
+          </div>
+        </div>
+
+        <!-- 6 Fonda La Ursula -->
+        <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(0,104,71,.3);background:#101418;transition:transform .25s,border-color .25s;cursor:pointer" onmouseenter="this.style.transform='translateY(-5px)';this.style.borderColor='#84d7ae'" onmouseleave="this.style.transform='translateY(0)';this.style.borderColor='rgba(0,104,71,.3)'">
+          <div style="height:140px;overflow:hidden;position:relative">
+            <img src="https://services.meteored.com/img/article/5-recetas-de-antojitos-mexicanos-faciles-para-esta-navidad-1734887460733_1024.jpg"
+              style="width:100%;height:100%;object-fit:cover;object-position:center 20%;filter:brightness(.85) saturate(1.1);transition:transform .4s"
+              onmouseenter="this.style.transform='scale(1.06)'" onmouseleave="this.style.transform='scale(1)'"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(10,15,12,.7),transparent 60%)"></div>
+            <span style="position:absolute;top:10px;left:10px;font-family:'Lexend',sans-serif;font-size:7px;font-weight:700;letter-spacing:.2em;color:#84d7ae;text-transform:uppercase;background:rgba(0,0,0,.55);padding:3px 8px;border-radius:2px">FONDA · COMIDA CORRIDA</span>
+          </div>
+          <div style="padding:16px">
+            <div style="font-family:'Lexend',sans-serif;font-size:15px;font-weight:900;color:#e0e3e8;text-transform:uppercase;letter-spacing:.03em">Fonda La Ursula</div>
+            <div style="font-family:'Lexend',sans-serif;font-size:10px;font-weight:300;color:rgba(190,201,193,.45);margin-top:4px;letter-spacing:.04em">Calz. de Tlalpan, CDMX</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CONVOCATORIA SELECCIÓN MAYOR ═══ -->
+  <section id="convocatoria" style="padding:48px 0;background:#101418">
+    <div style="max-width:48rem;margin:0 auto;padding:0 1rem">
+      <h3 class="font-headline font-black text-2xl uppercase tracking-tighter italic border-l-8 border-primary-container pl-4 mb-2">
+        SELECCION MAYOR
+      </h3>
+      <p style="font-family:'Lexend',sans-serif;font-size:10px;font-weight:600;letter-spacing:.25em;color:rgba(132,215,174,.6);text-transform:uppercase;margin-bottom:20px;padding-left:20px">CONVOCATORIA MUNDIAL 2026</p>
+    </div>
+
+    <!-- Carrusel — scroll nativo + fade bordes -->
+    <div style="position:relative">
+      <!-- Máscara fade izquierda -->
+      <div style="position:absolute;left:0;top:0;bottom:0;width:80px;background:linear-gradient(to right,#101418,transparent);z-index:2;pointer-events:none"></div>
+      <!-- Máscara fade derecha -->
+      <div style="position:absolute;right:0;top:0;bottom:0;width:80px;background:linear-gradient(to left,#101418,transparent);z-index:2;pointer-events:none"></div>
+
+      <div id="conv-wrap" style="
+        overflow-x:auto;overflow-y:visible;
+        -webkit-overflow-scrolling:touch;
+        scroll-behavior:smooth;
+        scrollbar-width:none;
+        padding:16px 80px 24px;
+        cursor:grab;
+        user-select:none;
+      ">
+        <div id="conv-track" style="display:flex;gap:14px;width:max-content;padding-bottom:4px">
+
+        <div class="pcard-scene" data-pos="POR"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/guilleochoa.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#1</span><div class="pcard-info"><span class="pcard-pos-badge">POR</span><span class="pcard-nombre">GUILLERMO<br>OCHOA</span><span class="pcard-club">AEL Limassol</span></div></div><div class="pcard-back"><span class="pcard-pos-full">PORTERO</span><span class="pcard-num-big">#1</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Guillermo<br>Ochoa</span><span class="pcard-club-full">AEL Limassol</span></div></div></div>
+        <div class="pcard-scene" data-pos="POR"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/raulra23.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#23</span><div class="pcard-info"><span class="pcard-pos-badge">POR</span><span class="pcard-nombre">RAÚL<br>RANGEL</span><span class="pcard-club">Chivas</span></div></div><div class="pcard-back"><span class="pcard-pos-full">PORTERO</span><span class="pcard-num-big">#23</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Raúl<br>Rangel</span><span class="pcard-club-full">Chivas</span></div></div></div>
+        <div class="pcard-scene" data-pos="POR"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/carlosacev.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#12</span><div class="pcard-info"><span class="pcard-pos-badge">POR</span><span class="pcard-nombre">CARLOS<br>ACEVEDO</span><span class="pcard-club">Santos Laguna</span></div></div><div class="pcard-back"><span class="pcard-pos-full">PORTERO</span><span class="pcard-num-big">#12</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Carlos<br>Acevedo</span><span class="pcard-club-full">Santos Laguna</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEF"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/jorgesanch2.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#2</span><div class="pcard-info"><span class="pcard-pos-badge">DEF</span><span class="pcard-nombre">JORGE<br>SÁNCHEZ</span><span class="pcard-club">PAOK</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DEFENSA</span><span class="pcard-num-big">#2</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Jorge<br>Sánchez</span><span class="pcard-club-full">PAOK</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEF"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/cesarmon.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#3</span><div class="pcard-info"><span class="pcard-pos-badge">DEF</span><span class="pcard-nombre">CÉSAR<br>MONTES</span><span class="pcard-club">Lokomotiv</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DEFENSA</span><span class="pcard-num-big">#3</span><div class="pcard-sep"></div><span class="pcard-nombre-full">César<br>Montes</span><span class="pcard-club-full">Lokomotiv</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEF"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/jesangul4.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#4</span><div class="pcard-info"><span class="pcard-pos-badge">DEF</span><span class="pcard-nombre">JESÚS<br>ANGULO</span><span class="pcard-club">Tigres</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DEFENSA</span><span class="pcard-num-big">#4</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Jesús<br>Angulo</span><span class="pcard-club-full">Tigres</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEF"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/jhoanvaz.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#5</span><div class="pcard-info"><span class="pcard-pos-badge">DEF</span><span class="pcard-nombre">JOHAN<br>VÁSQUEZ</span><span class="pcard-club">Genoa</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DEFENSA</span><span class="pcard-num-big">#5</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Johan<br>Vásquez</span><span class="pcard-club-full">Genoa</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEF"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/Richlede.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#20</span><div class="pcard-info"><span class="pcard-pos-badge">DEF</span><span class="pcard-nombre">RICHARD<br>LEDEZMA</span><span class="pcard-club">Chivas</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DEFENSA</span><span class="pcard-num-big">#20</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Richard<br>Ledezma</span><span class="pcard-club-full">Chivas</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEF"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/isarayes.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#15</span><div class="pcard-info"><span class="pcard-pos-badge">DEF</span><span class="pcard-nombre">ISRAEL<br>REYES</span><span class="pcard-club">América</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DEFENSA</span><span class="pcard-num-big">#15</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Israel<br>Reyes</span><span class="pcard-club-full">América</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEF"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/everlopez.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#21</span><div class="pcard-info"><span class="pcard-pos-badge">DEF</span><span class="pcard-nombre">EVERARDO<br>LÓPEZ</span><span class="pcard-club">Toluca</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DEFENSA</span><span class="pcard-num-big">#21</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Everardo<br>López</span><span class="pcard-club-full">Toluca</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/alvafid.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#6</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">ÁLVARO<br>FIDALGO</span><span class="pcard-club">Real Betis</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#6</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Álvaro<br>Fidalgo</span><span class="pcard-club-full">Real Betis</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/obevarg.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#16</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">OBED<br>VARGAS</span><span class="pcard-club">Atlético Madrid</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#16</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Obed<br>Vargas</span><span class="pcard-club-full">Atlético Madrid</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/orbepineda.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#17</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">ORBELÍN<br>PINEDA</span><span class="pcard-club">AEK Atenas</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#17</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Orbelín<br>Pineda</span><span class="pcard-club-full">AEK Atenas</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/eriklira.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#18</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">ERIK<br>LIRA</span><span class="pcard-club">Cruz Azul</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#18</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Erik<br>Lira</span><span class="pcard-club-full">Cruz Azul</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/denzelgarc.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#13</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">DENZELL<br>GARCÍA</span><span class="pcard-club">FC Juárez</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#13</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Denzell<br>García</span><span class="pcard-club-full">FC Juárez</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/carlosrod8.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#8</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">CARLOS<br>RODRÍGUEZ</span><span class="pcard-club">Cruz Azul</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#8</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Carlos<br>Rodríguez</span><span class="pcard-club-full">Cruz Azul</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/briangut.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#19</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">BRIAN<br>GUTIÉRREZ</span><span class="pcard-club">Chivas</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#19</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Brian<br>Gutiérrez</span><span class="pcard-club-full">Chivas</span></div></div></div>
+        <div class="pcard-scene" data-pos="MED"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/erisanch.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#14</span><div class="pcard-info"><span class="pcard-pos-badge">MED</span><span class="pcard-nombre">ERICK<br>SÁNCHEZ</span><span class="pcard-club">América</span></div></div><div class="pcard-back"><span class="pcard-pos-full">MEDIOCAMPISTA</span><span class="pcard-num-big">#14</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Erick<br>Sánchez</span><span class="pcard-club-full">América</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/robealba.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#26</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">ROBERTO<br>ALVARADO</span><span class="pcard-club">Chivas</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#26</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Roberto<br>Alvarado</span><span class="pcard-club-full">Chivas</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/rauljime.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#9</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">RAÚL<br>JIMÉNEZ</span><span class="pcard-club">Fulham</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#9</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Raúl<br>Jiménez</span><span class="pcard-club-full">Fulham</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/armagonza.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#24</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">ARMANDO<br>GONZÁLEZ</span><span class="pcard-club">Chivas</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#24</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Armando<br>González</span><span class="pcard-club-full">Chivas</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/guillequin.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#25</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">JULIÁN<br>QUIÑONES</span><span class="pcard-club">Al-Qadsiah</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#25</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Julián<br>Quiñones</span><span class="pcard-club-full">Al-Qadsiah</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/jesusgallardos.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#11</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">JESÚS<br>GALLARDO</span><span class="pcard-club">Toluca</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#11</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Jesús<br>Gallardo</span><span class="pcard-club-full">Toluca</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/alexvega.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#10</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">ALEXIS<br>VEGA</span><span class="pcard-club">Toluca</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#10</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Alexis<br>Vega</span><span class="pcard-club-full">Toluca</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/guillemrt22.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#22</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">GUILLERMO<br>MARTÍNEZ</span><span class="pcard-club">Pumas</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#22</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Guillermo<br>Martínez</span><span class="pcard-club-full">Pumas</span></div></div></div>
+        <div class="pcard-scene" data-pos="DEL"><div class="pcard"><div class="pcard-front"><div class="pcard-img" style="background-image:url('players/briangut.png')"></div><div class="pcard-overlay"></div><span class="pcard-dorsal">#7</span><div class="pcard-info"><span class="pcard-pos-badge">DEL</span><span class="pcard-nombre">GERMÁN<br>BERTERAME</span><span class="pcard-club">Inter Miami</span></div></div><div class="pcard-back"><span class="pcard-pos-full">DELANTERO</span><span class="pcard-num-big">#7</span><div class="pcard-sep"></div><span class="pcard-nombre-full">Germán<br>Berterame</span><span class="pcard-club-full">Inter Miami</span></div></div></div>
+
+      </div><!-- fin track -->
+      </div><!-- fin conv-wrap -->
+    </div><!-- fin wrapper con fade -->
+
+    <!-- Dots indicador de scroll -->
+    <div id="conv-dots" style="display:flex;justify-content:center;gap:5px;margin-top:4px"></div>
+  </section>
+
+  <!-- CALENDARIO — FULLWIDTH -->
+  <section id="calendario" class="fu s2" style="position:relative;overflow:hidden;padding:48px 0">
+    <!-- Fondo estadio fullwidth -->
+    <div style="position:absolute;inset:0;z-index:0">
+      <img src="https://assets.goal.com/images/v3/bltc84d477300ec7eb7/Aztec_Stadium_16-9.jpg"
+        style="width:100%;height:100%;object-fit:cover;object-position:center 30%;filter:grayscale(50%) brightness(.35) saturate(.8)"
+        onerror="this.src='https://hotelesemporio.com/wp-content/uploads/2025/11/Estadio.jpg'"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,30,15,.85) 0%,rgba(8,12,16,.82) 100%)"></div>
+    </div>
+    <!-- Contenido centrado -->
+    <div style="position:relative;z-index:1;max-width:48rem;margin:0 auto;padding:0 1rem">
+      <h3 class="font-headline font-black text-2xl uppercase tracking-tighter italic border-l-8 border-primary-container pl-4 mb-5">
+        PARTIDOS EN EL AZTECA
+      </h3>
+      <div class="space-y-1.5" id="calendario-wrap">
+        <div class="shim h-14 w-full"></div><div class="shim h-14 w-full"></div>
+        <div class="shim h-14 w-full"></div><div class="shim h-14 w-full"></div>
+        <div class="shim h-14 w-full"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PARTIDOS EN GUADALAJARA — FULLWIDTH ═══ -->
+  <section id="guadalajara" style="position:relative;overflow:hidden;padding:48px 0">
+    <div style="position:absolute;inset:0;z-index:0">
+      <img src="https://hotelesemporio.com/wp-content/uploads/2025/11/Estadio.jpg"
+        style="width:100%;height:100%;object-fit:cover;object-position:center 40%;filter:grayscale(50%) brightness(.3) saturate(.8)"
+        onerror="this.style.background='#0d1a20'"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,10,30,.88) 0%,rgba(8,12,16,.85) 100%)"></div>
+    </div>
+    <div style="position:relative;z-index:1;max-width:48rem;margin:0 auto;padding:0 1rem">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:6px">
+        <h3 class="font-headline font-black text-2xl uppercase tracking-tighter italic border-l-8 pl-4" style="border-color:#00B0FF;color:#e0e3e8">
+          PARTIDOS EN GUADALAJARA
+        </h3>
+      </div>
+      <p style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.25em;color:rgba(0,176,255,.6);text-transform:uppercase;margin-bottom:20px;padding-left:20px">ESTADIO AKRON · ZAPOPAN, JALISCO</p>
+
+      <div style="display:flex;flex-direction:column;gap:6px">
+
+        <!-- JUE 11 JUN — Corea del Sur vs Chequia -->
+        <div style="position:relative;overflow:hidden;border-radius:3px;border:1px solid rgba(0,176,255,.3);height:64px;transition:transform .2s" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'">
+          <div style="position:absolute;left:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/kr.png') center/cover;mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;right:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/cz.png') center/cover;mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(8,12,16,.75) 0%,rgba(8,12,16,.5) 40%,rgba(8,12,16,.5) 60%,rgba(8,12,16,.75) 100%)"></div>
+          <div style="position:relative;z-index:1;height:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 14px">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+              <img src="https://flagcdn.com/w80/kr.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em">COREA DEL SUR</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:11px;color:rgba(190,201,193,.35);letter-spacing:.1em">VS</span>
+              <span style="font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;color:rgba(0,176,255,.8);letter-spacing:.1em">JUE 11 JUN 2026</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;justify-content:flex-end">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em;text-align:right">CHEQUIA</span>
+              <img src="https://flagcdn.com/w80/cz.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- JUE 18 JUN — México vs Corea del Sur -->
+        <div style="position:relative;overflow:hidden;border-radius:3px;border:1px solid #006847;height:64px;transition:transform .2s;background:rgba(0,104,71,.08)" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'">
+          <div style="position:absolute;left:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/mx.png') center/cover;mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;right:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/kr.png') center/cover;mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(0,30,15,.8) 0%,rgba(8,12,16,.5) 40%,rgba(8,12,16,.5) 60%,rgba(0,30,15,.8) 100%)"></div>
+          <div style="position:relative;z-index:1;height:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 14px">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+              <img src="https://flagcdn.com/w80/mx.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em">MEXICO</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:11px;color:rgba(190,201,193,.35);letter-spacing:.1em">VS</span>
+              <span style="font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;color:#84d7ae;letter-spacing:.1em">JUE 18 JUN 2026 · GRUPO A</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;justify-content:flex-end">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em;text-align:right">COREA DEL SUR</span>
+              <img src="https://flagcdn.com/w80/kr.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAR 23 JUN — Colombia vs RD Congo -->
+        <div style="position:relative;overflow:hidden;border-radius:3px;border:1px solid rgba(0,176,255,.25);height:64px;transition:transform .2s" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'">
+          <div style="position:absolute;left:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/co.png') center/cover;mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;right:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/cd.png') center/cover;mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(8,12,16,.75) 0%,rgba(8,12,16,.5) 40%,rgba(8,12,16,.5) 60%,rgba(8,12,16,.75) 100%)"></div>
+          <div style="position:relative;z-index:1;height:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 14px">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+              <img src="https://flagcdn.com/w80/co.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em">COLOMBIA</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:11px;color:rgba(190,201,193,.35);letter-spacing:.1em">VS</span>
+              <span style="font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;color:rgba(0,176,255,.8);letter-spacing:.1em">MAR 23 JUN 2026</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;justify-content:flex-end">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em;text-align:right">RD CONGO</span>
+              <img src="https://flagcdn.com/w80/cd.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIE 26 JUN — España vs Uruguay -->
+        <div style="position:relative;overflow:hidden;border-radius:3px;border:1px solid rgba(0,176,255,.25);height:64px;transition:transform .2s" onmouseenter="this.style.transform='scale(1.01)'" onmouseleave="this.style.transform='scale(1)'">
+          <div style="position:absolute;left:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/es.png') center/cover;mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;right:0;top:0;width:50%;height:100%;background:url('https://flagcdn.com/w320/uy.png') center/cover;mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));-webkit-mask-image:linear-gradient(to left,rgba(0,0,0,.18),rgba(0,0,0,0));filter:blur(1px)"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(to right,rgba(8,12,16,.75) 0%,rgba(8,12,16,.5) 40%,rgba(8,12,16,.5) 60%,rgba(8,12,16,.75) 100%)"></div>
+          <div style="position:relative;z-index:1;height:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 14px">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+              <img src="https://flagcdn.com/w80/es.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em">ESPAÑA</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:11px;color:rgba(190,201,193,.35);letter-spacing:.1em">VS</span>
+              <span style="font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;color:rgba(0,176,255,.8);letter-spacing:.1em">VIE 26 JUN 2026 · GRUPO H</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;justify-content:flex-end">
+              <span style="font-family:'Lexend',sans-serif;font-weight:900;font-size:12px;text-transform:uppercase;color:#e0e3e8;letter-spacing:.05em;text-align:right">URUGUAY</span>
+              <img src="https://flagcdn.com/w80/uy.png" style="width:28px;height:19px;object-fit:cover;border-radius:2px;border:1px solid rgba(255,255,255,.15)"/>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- fin partidos -->
+
+      <!-- Stats del estadio -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:16px">
+        <div style="background:rgba(0,176,255,.08);border:1px solid rgba(0,176,255,.2);padding:12px;text-align:center;border-radius:3px">
+          <div style="font-family:'Lexend',sans-serif;font-weight:900;font-size:18px;color:#00B0FF">48,071</div>
+          <div style="font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.5);text-transform:uppercase">Capacidad</div>
+        </div>
+        <div style="background:rgba(0,176,255,.08);border:1px solid rgba(0,176,255,.2);padding:12px;text-align:center;border-radius:3px">
+          <div style="font-family:'Lexend',sans-serif;font-weight:900;font-size:18px;color:#00B0FF">2010</div>
+          <div style="font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.5);text-transform:uppercase">Inaugurado</div>
+        </div>
+        <div style="background:rgba(0,176,255,.08);border:1px solid rgba(0,176,255,.2);padding:12px;text-align:center;border-radius:3px">
+          <div style="font-family:'Lexend',sans-serif;font-weight:900;font-size:18px;color:#00B0FF">4 JUEGOS</div>
+          <div style="font-family:'Lexend',sans-serif;font-size:8px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.5);text-transform:uppercase">Mundial 2026</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- STREAMING — FULLWIDTH -->
+  <section id="ver" class="fu s4" style="position:relative;overflow:hidden;padding:48px 0">
+    <!-- Fondo imagen broadcasting fullwidth -->
+    <div style="position:absolute;inset:0;z-index:0">
+      <img src="https://dplnews.com/wp-content/uploads/2019/08/dplnews_audiovisual_dn160819.jpg"
+        style="width:100%;height:100%;object-fit:cover;object-position:center;filter:grayscale(40%) brightness(.25) saturate(.7)"/>
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(8,12,16,.88) 0%,rgba(0,20,12,.84) 100%)"></div>
+    </div>
+    <!-- Contenido centrado -->
+    <div style="position:relative;z-index:1;max-width:48rem;margin:0 auto;padding:0 1rem">
+    <h3 class="font-headline font-black text-2xl uppercase tracking-tighter italic border-l-8 border-primary-container pl-4 mb-5">
+      TRANSMISION EN VIVO
+    </h3>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+
+      <a href="https://www.vix.com" target="_blank" class="plat-card">
+        <div class="content">
+          <svg viewBox="0 0 80 32" style="height:32px;width:auto" fill="none">
+            <text x="4" y="26" font-family="Lexend,sans-serif" font-weight="900" font-size="28" fill="#ffffff" font-style="italic">ViX</text>
+          </svg>
+          <div style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;color:#84d7ae;text-transform:uppercase">Streaming Exclusivo</div>
+          <div style="font-size:8px;color:rgba(190,201,193,.5);font-family:'Lexend',sans-serif">Gratis + Premium</div>
+        </div>
+      </a>
+
+      <a href="https://www.aztecanoticias.com.mx" target="_blank" class="plat-card">
+        <div class="content">
+          <svg viewBox="0 0 90 36" style="height:32px;width:auto" fill="none">
+            <rect width="90" height="36" rx="2" fill="#c40220"/>
+            <text x="45" y="25" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="900" font-size="16" fill="#ffffff">AZTECA 7</text>
+          </svg>
+          <div style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.7);text-transform:uppercase">TV Abierta</div>
+          <div style="font-size:8px;color:#84d7ae;font-family:'Lexend',sans-serif">GRATIS</div>
+        </div>
+      </a>
+
+      <a href="https://www.canal5.com.mx" target="_blank" class="plat-card">
+        <div class="content">
+          <svg viewBox="0 0 60 36" style="height:32px;width:auto" fill="none">
+            <circle cx="30" cy="18" r="16" fill="#0066cc"/>
+            <text x="30" y="24" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="900" font-size="16" fill="#ffffff">5</text>
+          </svg>
+          <div style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.7);text-transform:uppercase">Canal 5 Televisa</div>
+          <div style="font-size:8px;color:#84d7ae;font-family:'Lexend',sans-serif">GRATIS</div>
+        </div>
+      </a>
+
+      <a href="https://www.tudn.com" target="_blank" class="plat-card">
+        <div class="content">
+          <svg viewBox="0 0 90 36" style="height:32px;width:auto" fill="none">
+            <rect width="90" height="36" rx="2" fill="#ff6600"/>
+            <text x="45" y="25" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="900" font-size="16" fill="#ffffff">TUDN</text>
+          </svg>
+          <div style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.7);text-transform:uppercase">Cable + Streaming</div>
+          <div style="font-size:8px;color:rgba(190,201,193,.4);font-family:'Lexend',sans-serif">Sky / Izzi / Dish</div>
+        </div>
+      </a>
+
+      <a href="https://aztecago.tv" target="_blank" class="plat-card">
+        <div class="content">
+          <svg viewBox="0 0 100 36" style="height:32px;width:auto" fill="none">
+            <text x="50" y="26" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="900" font-size="14" fill="#84d7ae" font-style="italic">AZTECA GO</text>
+          </svg>
+          <div style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.7);text-transform:uppercase">App Oficial</div>
+          <div style="font-size:8px;color:#84d7ae;font-family:'Lexend',sans-serif">GRATIS</div>
+        </div>
+      </a>
+
+      <a href="https://www.fifa.com/fifaplus" target="_blank" class="plat-card">
+        <div class="content">
+          <svg viewBox="0 0 80 36" style="height:32px;width:auto" fill="none">
+            <rect width="80" height="36" rx="2" fill="#1a478a"/>
+            <text x="40" y="25" text-anchor="middle" font-family="Lexend,sans-serif" font-weight="900" font-size="15" fill="#ffffff">FIFA+</text>
+          </svg>
+          <div style="font-family:'Lexend',sans-serif;font-size:9px;font-weight:700;letter-spacing:.15em;color:rgba(190,201,193,.7);text-transform:uppercase">Global</div>
+          <div style="font-size:8px;color:#84d7ae;font-family:'Lexend',sans-serif">GRATIS</div>
+        </div>
+      </a>
+
+    </div>
+    <p style="font-size:8px;color:rgba(190,201,193,.3);letter-spacing:.15em;text-align:center;margin-top:12px;text-transform:uppercase;font-family:'Lexend',sans-serif">
+      Algunos partidos requieren suscripcion · Verifica disponibilidad en tu region
+    </p>
+    </div>
+  </section>
+
+  <!-- MAPA y resto — centrado normal -->
+  <div class="max-w-3xl mx-auto px-4 space-y-16 pb-32" style="padding-top:64px">
+
+  <!-- MAPA -->
+  <section id="mapa" class="fu s5">
+    <div class="flex justify-between items-end mb-5">
+      <h3 class="font-headline font-black text-2xl uppercase tracking-tighter italic border-l-8 border-primary-container pl-4">
+        EL COLOSO DE SANTA URSULA
+      </h3>
+      <a href="https://maps.google.com/?q=Estadio+Azteca+CDMX" target="_blank"
+        class="flex items-center gap-1 text-[9px] font-bold tracking-widest text-primary hover:underline uppercase mb-1">
+        <svg class="w-3.5 h-3.5"><use href="#ic-ext"/></svg> Maps
+      </a>
+    </div>
+    <div class="relative border border-outline-variant overflow-hidden" style="border-radius:3px">
+      <div id="map"></div>
+      <div class="absolute top-3 left-1/2 -translate-x-1/2 bg-surface/90 backdrop-blur px-4 py-1.5 border border-primary-container whitespace-nowrap" style="border-radius:2px">
+        <p class="text-[9px] font-bold tracking-[.2em] text-primary uppercase">Av. Insurgentes Sur 3465, CDMX</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-1.5 mt-2">
+      <div class="bg-surface-container p-3 text-center border border-outline-variant">
+        <div class="font-headline font-black text-lg text-primary">87,523</div>
+        <div class="text-[8px] tracking-widest text-on-surface-variant uppercase font-bold">Capacidad</div>
+      </div>
+      <div class="bg-surface-container p-3 text-center border border-outline-variant">
+        <div class="font-headline font-black text-lg text-primary">1966</div>
+        <div class="text-[8px] tracking-widest text-on-surface-variant uppercase font-bold">Fundado</div>
+      </div>
+      <div class="bg-surface-container p-3 text-center border border-outline-variant">
+        <div class="font-headline font-black text-lg text-primary">3a VEZ</div>
+        <div class="text-[8px] tracking-widest text-on-surface-variant uppercase font-bold">Mundial</div>
+      </div>
+    </div>
+  </section>
+
+  </div><!-- fin centrado mapa -->
+
+</main>
+
+<!-- NAV MOVIL -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 md:hidden bg-surface/90 backdrop-blur-xl border-t border-outline-variant">
+  <a href="#partido"    class="flex flex-col items-center text-primary gap-0.5"><svg class="w-6 h-6"><use href="#ic-ball"/></svg><span class="font-headline text-[8px] font-bold uppercase">Partido</span></a>
+  <a href="#ver"        class="flex flex-col items-center text-on-surface opacity-50 gap-0.5"><svg class="w-6 h-6"><use href="#ic-tv"/></svg><span class="font-headline text-[8px] font-bold uppercase">Ver</span></a>
+  <a href="#mapa"       class="flex flex-col items-center text-on-surface opacity-50 gap-0.5"><svg class="w-6 h-6"><use href="#ic-map"/></svg><span class="font-headline text-[8px] font-bold uppercase">Mapa</span></a>
+</nav>
+
+<footer class="flex items-center justify-center py-6 bg-surface border-t border-outline-variant">
+  <p class="font-headline text-[8px] text-on-surface-variant tracking-[.5em] uppercase">MEXICO 2026 · EL CORAZON DEL MUNDO</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
