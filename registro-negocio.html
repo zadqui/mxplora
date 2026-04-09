@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrar negocio | MXPLORA</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="registro-negocio.css">
+</head>
+<body>
+
+  <header class="form-topbar">
+    <a class="brand" href="#">
+      <img src="img/logo.svg" alt="MXPLORA" class="brand-logo">
+    </a>
+
+    <a href="#" class="back-link">← Volver al inicio</a>
+  </header>
+
+  <main class="form-page">
+    <section class="form-hero">
+      <p class="hero-kicker">Registro general</p>
+      <h1>Registra tu negocio en MXPLORA</h1>
+      <p class="hero-text">
+        Completa la información general de tu negocio. Más adelante podrás agregar
+        los campos específicos según si es comida, hospedaje o bazar.
+      </p>
+    </section>
+
+    <section class="form-card">
+      <form id="businessForm" class="business-form">
+
+        <!-- Información básica -->
+        <div class="form-section">
+          <div class="section-heading">
+            <h2>Información básica</h2>
+            <p>Datos principales para identificar tu negocio.</p>
+          </div>
+
+          <div class="form-grid two-cols">
+            <div class="form-group full-width">
+              <label for="businessName" class="form-label">Nombre del negocio</label>
+              <input
+                type="text"
+                id="businessName"
+                name="businessName"
+                class="form-input"
+                placeholder="Ej. Taquería El Sol"
+                required
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="businessType" class="form-label">Tipo de negocio</label>
+              <select id="businessType" name="businessType" class="form-input form-select" required>
+                <option value="">Selecciona una opción</option>
+                <option value="comida">Comida</option>
+                <option value="hospedaje">Hospedaje</option>
+                <option value="bazar">Bazar</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width">
+              <label class="form-label">Logo del negocio</label>
+
+              <div class="upload-box" id="uploadBox">
+                <input
+                  type="file"
+                  id="logoInput"
+                  class="file-input"
+                  accept=".png,.jpg,.jpeg,.svg,image/*"
+                >
+
+                <label for="logoInput" class="upload-content">
+                  <span class="upload-btn">Seleccionar imagen</span>
+                  <span class="upload-text">o arrastra y suelta el logo aquí</span>
+                  <span class="upload-hint">Formatos permitidos: PNG, JPG, JPEG, SVG</span>
+                </label>
+              </div>
+
+              <div class="upload-preview hidden" id="uploadPreview">
+                <img id="previewImg" alt="Vista previa del logo">
+                <div class="upload-preview-info">
+                  <p id="fileName">Sin archivo seleccionado</p>
+                  <button type="button" class="remove-file-btn" id="removeFileBtn">Quitar archivo</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horarios -->
+        <div class="form-section" id="scheduleSection">
+          <div class="section-heading">
+            <h2>Horario</h2>
+            <p>Indica el horario general de atención de tu negocio.</p>
+          </div>
+
+          <div class="form-grid two-cols">
+            <div class="form-group">
+              <label for="openTime" class="form-label">Horario de apertura</label>
+              <input type="time" id="openTime" name="openTime" class="form-input">
+            </div>
+
+            <div class="form-group">
+              <label for="closeTime" class="form-label">Horario de cierre</label>
+              <input type="time" id="closeTime" name="closeTime" class="form-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Redes sociales -->
+        <div class="form-section">
+          <div class="section-heading">
+            <h2>Redes sociales</h2>
+            <p>Agrega tus redes o medios de contacto principales.</p>
+          </div>
+
+          <div class="form-grid two-cols">
+            <div class="form-group">
+              <label for="instagram" class="form-label">Instagram</label>
+              <input
+                type="text"
+                id="instagram"
+                name="instagram"
+                class="form-input"
+                placeholder="@tunegocio o enlace"
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="facebook" class="form-label">Facebook</label>
+              <input
+                type="text"
+                id="facebook"
+                name="facebook"
+                class="form-input"
+                placeholder="Nombre de página o enlace"
+              >
+            </div>
+
+            <div class="form-group full-width">
+              <label for="whatsapp" class="form-label">WhatsApp</label>
+              <input
+                type="tel"
+                id="whatsapp"
+                name="whatsapp"
+                class="form-input"
+                placeholder="Ej. +52 999 123 4567"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Medios de pago -->
+        <div class="form-section">
+          <div class="section-heading">
+            <h2>Medios de pago</h2>
+            <p>Selecciona todos los métodos de pago que acepta tu negocio.</p>
+          </div>
+
+          <div class="chips-grid">
+            <label class="check-chip">
+              <input type="checkbox" name="paymentMethods" value="efectivo">
+              <span>Efectivo</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="paymentMethods" value="tarjeta">
+              <span>Tarjeta</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="paymentMethods" value="transferencia">
+              <span>Transferencia</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="paymentMethods" value="criptomonedas">
+              <span>Criptomonedas</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="paymentMethods" value="vales_despensa">
+              <span>Vales de despensa</span>
+            </label>
+            <label class="check-chip">
+              <input type="checkbox" name="paymentMethods" value="otro" id="paymentOtherCheck">
+              <span>Otro</span>
+            </label>
+          </div>
+          <div class="form-group hidden" id="paymentOtherGroup">
+            <label for="paymentOtherText" class="form-label">Especifica otro medio de pago</label>
+            <input
+              type="text"
+              id="paymentOtherText"
+              name="paymentOtherText"
+              class="form-input"
+              placeholder="Ej. PayPal, cheque, etc."
+            >
+          </div>
+        </div>
+
+        <!-- Idiomas -->
+        <div class="form-section">
+          <div class="section-heading">
+            <h2>Idiomas de atención</h2>
+            <p>Marca los idiomas en los que pueden atender dentro del negocio.</p>
+          </div>
+
+          <div class="chips-grid">
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="espanol">
+              <span>Español</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="ingles">
+              <span>Inglés</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="frances">
+              <span>Francés</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="aleman">
+              <span>Alemán</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="italiano">
+              <span>Italiano</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="portugues">
+              <span>Portugués</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="chino">
+              <span>Chino</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="japones">
+              <span>Japonés</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="coreano">
+              <span>Coreano</span>
+            </label>
+
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="ruso">
+              <span>Ruso</span>
+            </label>
+            <label class="check-chip">
+              <input type="checkbox" name="languages" value="otro" id="languageOtherCheck">
+              <span>Otro</span>
+            </label>
+          </div>
+
+          <div class="form-group hidden" id="languageOtherGroup">
+            <label for="languageOtherText" class="form-label">Especifica otro idioma</label>
+            <input
+              type="text"
+              id="languageOtherText"
+              name="languageOtherText"
+              class="form-input"
+              placeholder="Ej. Árabe, Náhuatl, Maya, etc."
+            >
+          </div>
+        </div>
+        <!-- Clasificación de comida -->
+        <div class="form-section hidden-section" id="foodSection">
+          <div class="section-heading">
+            <h2>Clasificación de comida</h2>
+            <p>Selecciona la categoría y subcategoría principal de tu negocio.</p>
+          </div>
+
+          <div class="form-grid two-cols">
+            <div class="form-group">
+              <label for="foodCategory" class="form-label">Categoría</label>
+              <select id="foodCategory" name="foodCategory" class="form-input form-select">
+                <option value="">Selecciona una categoría</option>
+                <option value="Mexicana">Mexicana</option>
+                <option value="Italiana">Italiana</option>
+                <option value="Comida rápida">Comida rápida</option>
+                <option value="Japonesa">Japonesa</option>
+                <option value="Saludable">Saludable</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Bebidas">Bebidas</option>
+                <option value="Postres">Postres</option>
+                <option value="Internacional">Internacional</option>
+                <option value="Otros">Otros</option>
+              </select>
+            </div>
+
+            <div class="form-group" id="foodSubcategoryGroup">
+              <label for="foodSubcategory" class="form-label">Subcategoría</label>
+              <select id="foodSubcategory" name="foodSubcategory" class="form-input form-select">
+                <option value="">Primero selecciona una categoría</option>
+              </select>
+            </div>
+
+            <div class="form-group full-width hidden" id="foodSubcategoryOtherGroup">
+              <label for="foodSubcategoryOther" class="form-label">Especifica subcategoría</label>
+              <input
+                type="text"
+                id="foodSubcategoryOther"
+                name="foodSubcategoryOther"
+                class="form-input"
+                placeholder="Ej. Yakitori, comida fusión, etc."
+              >
+            </div>
+          </div>
+        </div>
+        <!-- Datos de hospedaje -->
+<div class="form-section hidden-section" id="lodgingSection">
+  <div class="section-heading">
+    <h2>Datos de hospedaje</h2>
+    <p>Agrega la información general del hospedaje. Más adelante podrás registrar unidades o productos con mayor detalle.</p>
+  </div>
+
+  <div class="form-grid two-cols">
+    <div class="form-group">
+      <label for="lodgingType" class="form-label">Tipo de hospedaje</label>
+      <select id="lodgingType" name="lodgingType" class="form-input form-select">
+        <option value="">Selecciona una opción</option>
+        <option value="Habitación">Habitación</option>
+        <option value="Departamento">Departamento</option>
+        <option value="Casa completa">Casa completa</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="lodgingLocation" class="form-label">Ubicación</label>
+      <input
+        type="text"
+        id="lodgingLocation"
+        name="lodgingLocation"
+        class="form-input"
+        placeholder="Ej. Centro, Mérida, Yucatán"
+      >
+    </div>
+  </div>
+</div>
+
+<!-- Datos de bazar -->
+<div class="form-section hidden-section" id="bazaarSection">
+  <div class="section-heading">
+    <h2>Clasificación del bazar</h2>
+    <p>Selecciona la categoría principal de tu bazar. Más adelante podrás agregar productos específicos.</p>
+  </div>
+
+  <div class="form-grid two-cols">
+    <div class="form-group">
+      <label for="bazaarCategory" class="form-label">Categoría</label>
+      <select id="bazaarCategory" name="bazaarCategory" class="form-input form-select">
+        <option value="">Selecciona una categoría</option>
+        <option value="arte">Arte</option>
+        <option value="libros">Libros</option>
+        <option value="peluches">Peluches</option>
+        <option value="ropa">Ropa</option>
+        <option value="accesorios">Accesorios</option>
+        <option value="artesanias">Artesanías</option>
+        <option value="productos_caseros">Productos caseros</option>
+        <option value="otros">Otros</option>
+      </select>
+    </div>
+
+    <div class="form-group full-width hidden" id="bazaarCategoryOtherGroup">
+      <label for="bazaarCategoryOther" class="form-label">Especifica la categoría</label>
+      <input
+        type="text"
+        id="bazaarCategoryOther"
+        name="bazaarCategoryOther"
+        class="form-input"
+        placeholder="Ej. papelería creativa, decoración, velas, etc."
+      >
+    </div>
+  </div>
+</div>
+        <!-- Acciones -->
+        <div class="form-actions">
+          <button type="button" class="btn-secondary">Guardar borrador</button>
+          <button type="submit" class="btn-primary">Continuar registro</button>
+        </div>
+
+      </form>
+    </section>
+  </main>
+
+  <div class="custom-alert hidden" id="customAlert">
+  <div class="custom-alert-backdrop" id="customAlertBackdrop"></div>
+  <!-- Avisos customizados -->
+  <div class="custom-alert-box" role="dialog" aria-modal="true" aria-labelledby="customAlertTitle">
+    <div class="custom-alert-icon" id="customAlertIcon">!</div>
+    <h3 id="customAlertTitle">Ups, revisa esto</h3>
+    <p id="customAlertMessage">Aquí irá el mensaje.</p>
+    <button type="button" class="custom-alert-btn" id="customAlertBtn">Entendido</button>
+  </div>
+</div>
+
+ <script src="registro-negocio.js"></script>
+
+</body>
+</html>
